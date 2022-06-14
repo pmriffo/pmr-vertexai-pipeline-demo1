@@ -1,0 +1,26 @@
+steps:
+    # Install dependencies
+  - name: python:3.7
+    entrypoint: pip
+    args: ["install", "-r", "requirements.txt", "--user"]
+
+    # Create the pipeline JSON file
+  - name: python:3.7
+    entrypoint: 'python'
+    args: ['pipeline.py']
+    dir: 'Pipeline'
+
+  # Copy trainer.py to GCS
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args: [ 'cp', 'trainer.py', 'gs://${_BUCKET}/${_PIPELINE_NAME}/${SHORT_SHA}/trainer.py' ]
+    dir: 'Pipeline'
+
+  # Copy transformer.py to GCS
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args: [ 'cp', 'transform.py', 'gs://${_BUCKET}/${_PIPELINE_NAME}/${SHORT_SHA}/transform.py' ]
+    dir: 'Pipeline'
+
+
+    # Copy pipeline JSON to GCS
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args: ['cp', '/workspace/pipeline.json', 'gs://${_BUCKET}/${_PIPELINE_NAME}/${SHORT_SHA}/pipeline.json']
